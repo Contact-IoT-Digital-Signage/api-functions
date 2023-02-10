@@ -1,0 +1,212 @@
+openapi: 3.0.3
+info:
+  title: DeveloperWeek2023 IoT Contact Digital Signage
+  description: |-
+    This API document summarizes the specific implementation of the two microservices provided as APIs.
+    Our project at DeveloperWeek 2023 is to connect stations and call centers via video calls to enable efficient analysis.
+    Microservices
+    1. Active Calls
+      - Microservice for handling valid video calls. Starting a new video call or receiving a video call is done through this microservice.
+    2. Call History
+      - This microservice handles video calls that have already been terminated. It is useful to retrieve the content of transcribed calls and create FAQs.
+  version: 0.1.0
+tags:
+  - name: activecall
+    description: Operations about Active Calls
+  - name: callhistory
+    description: Operations about Call History
+paths:
+  /activecalls:
+    get:
+      tags:
+        - activecall
+      summary: List active calls
+      description: 'Get a list of all active calls, including unconnected calls.This method is the most important in the administration. You can choose from this list which calls to catch or not.'
+      operationId: listActivecalls
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Call'
+    post:
+      tags:
+        - activecall
+      summary: Start new video call
+      description: 'This request should basically be sent from signage. The signage presses a call button to initiate the call, in which this method is called. This method is supposed to return the token and any other information that ZoomSDK needs to initiate the video call.'
+      operationId: createActivecall
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                signageId:
+                  type: string
+                  example: xxx123456789
+                signageName:
+                  type: string
+                  example: Ikebukuro Station
+        required: true
+      responses:
+        '201':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitialInfo'
+  /activecalls/{callId}:
+    put:
+      tags:
+        - activecall
+      summary: Update Activecall
+      description: 'The function of this method is simply to change the call status from waiting to connected.This method is called when the management screen catches a video call.'
+      operationId: updateActivecall
+      parameters:
+        - name: callId
+          in: path
+          description: ID of call
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Update call
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Call'
+      responses:
+        '200':
+          description: Success
+    delete:
+        tags:
+          - activecall
+        summary: Deletes active call
+        description: 'Method called when a video call is disconnected. Calling this method prevents the call from appearing in the list of calls. In other words, it is a logical deletion.'
+        operationId: deleteActivecall
+        parameters:
+        - name: callId
+          in: path
+          description: ID of call
+          required: true
+          schema:
+            type: string
+        responses:
+         '200':
+            description: Success
+ 
+  /callhistory:
+    get:
+      tags:
+        - callhistory
+      summary: List Call History
+      description: 'Get a list of completed video calls. This is a method called only from the admin panel. Perhaps there is no transcription for a video call that has just ended, but that is not a problem. They will be added later.'
+      operationId: listCallhistory
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CallHistory'
+  /callhistory/{callId}:
+    post:
+      tags:
+        - callhistory
+      summary: Create Call History
+      description: 'Method called when a video call is terminated. Basically, it copies the information from the active call directly into the call history.I was thinking that server-to-server coordination would be fine, but I would rather pass all the information from the client to keep it loosely coupled.'
+      operationId: createCallhistory
+      parameters:
+        - name: callId
+          in: path
+          description: ID of call
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Create Call History
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CallHistory'
+      responses:
+        '201':
+          description: Success
+    put:
+      tags:
+        - callhistory
+      summary: Update Call History
+      description: 'This method may be fine without it; it is used to add the transcriptions to the DB after the AI processing is finished.'
+      operationId: updateCallhistory
+      parameters:
+        - name: callId
+          in: path
+          description: ID of call
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Update Call History
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CallHistory'
+      responses:
+        '200':
+          description: Success
+components:
+  schemas:
+    Call:
+      type: object
+      properties:
+        id:
+          type: string
+        startDate:
+          type: string
+          format: date-time
+        signageId:
+          type: string
+          description: Caller IoT Contact Digital Signage ID
+        signageName:
+          type: string
+          description: Caller IoT Contact Digital Signage Name
+        status:
+          type: string
+          description: Call Status
+          example: connected
+          enum:
+            - waiting
+            - connected
+        terminated:
+          type: boolean
+    InitialInfo:
+      type: object
+      properties:
+        token:
+          type: string
+    CallHistory:
+      type: object
+      properties:
+        id:
+          type: string
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        signageId:
+          type: string
+          description: Caller IoT Contact Digital Signage ID
+        signageName:
+          type: string
+          description: Caller IoT Contact Digital Signage Name
+        category:
+          type: string
+        transcription:
+          type: string
