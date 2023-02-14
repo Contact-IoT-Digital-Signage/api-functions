@@ -1,12 +1,11 @@
 import io
 import json
-import logging
 from fdk import response
 import oci
 import base64
 import os
 from dotenv import load_dotenv
-import time
+from datetime import datetime
 import jwt
 
 
@@ -18,17 +17,21 @@ def handler(ctx, data: io.BytesIO = None):
     try:
         request_body = json.loads(data.getvalue())
         tpc = request_body.get("tpc")
+        signageName = request_body.get("signageName")
 
-    except(Exception) as ex:
-        msg = "tpc not found in request body"
-        logging.getLogger().info(str(ex))
+    except Exception:
+        msg = "mandatory field missing in request body"
         return response.Response(ctx, msg, status_code = 400)
 
     signer = oci.auth.signers.get_resource_principals_signer()
     zoom_sdk_key = get_secret(signer, zoom_secret_ocid)
+    
+    dt = datetime.now()
+    ts = datetime.timestamp(dt)
+    dt.strftime("%d-%m-%YT%H:%M:%S")
 
-    zoom_tokens = get_zoom_tokens(tpc, zoom_sdk_key)
-    insert_in_table(signer, tpc, zoom_tokens[1])
+    zoom_tokens = get_zoom_tokens(tpc, ts, zoom_sdk_key)
+    insert_in_table(signer, tpc, zoom_tokens[1], dt.strftime("%Y-%m-%dT%H:%M:%S"), signageName)
     
     return response.Response(
         ctx, response_data=json.dumps(
@@ -44,7 +47,7 @@ def get_secret(signer, secret_ocid):
     decrypted_secret = base64.b64decode(secret).decode("utf-8")
     return decrypted_secret
 
-def insert_in_table(signer, tpc, token):
+def insert_in_table(signer, tpc, token, current_time, signageName):
 
     table_ocid = os.getenv("TABLE_OCID")
 
@@ -54,14 +57,14 @@ def insert_in_table(signer, tpc, token):
         update_row_details=oci.nosql.models.UpdateRowDetails(
             value={
                 'tpc': f"{tpc}",
-                'token': f"{token}"
+                'token': f"{token}",
+                'creationTime': f"{current_time}",
+                'signageName': f"{signageName}"
             }
         )
     )
 
-def get_zoom_tokens(tpc, zoom_sdk_key):
-
-    current_time = int(time.time())
+def get_zoom_tokens(tpc, current_time, zoom_sdk_key):
 
     headers = {
         'alg': 'HS256',

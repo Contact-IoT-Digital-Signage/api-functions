@@ -1,16 +1,23 @@
 import io
-import json
 from fdk import response
 import io
-import json
 import oci
 import os
 from dotenv import load_dotenv
 
+
+'''
+Function fetches all active calls
+'''
 def handler(ctx, data: io.BytesIO = None):
+
     load_dotenv()
     signer = oci.auth.signers.get_resource_principals_signer()
-    get_active_tokens(signer)
+    db_response_data = get_active_tokens(signer)
+
+    print(db_response_data, flush=True)
+
+    return response.Response(ctx, db_response_data.items, status_code=200)
 
 def get_active_tokens(signer):
     
@@ -19,7 +26,7 @@ def get_active_tokens(signer):
     nosql_client = oci.nosql.NosqlClient({}, signer=signer)
 
     get_active_calls_statement = \
-        'select * from zoomtokens where isActive = true'
+        'select * from zoomtokens'
 
     prepare_statement_response = \
         nosql_client.prepare_statement(compartment_id=compartment_ocid,statement=get_active_calls_statement)
@@ -29,10 +36,10 @@ def get_active_tokens(signer):
     query_response = nosql_client.query(
         query_details=oci.nosql.models.QueryDetails(
             compartment_id=compartment_ocid,
-            statement=prepare_statement_response,
+            statement=prepare_statement_response.data.statement,
             is_prepared=True,
             consistency="EVENTUAL"
         )
     )
 
-    print(query_response.data, flush=True)
+    return query_response.data

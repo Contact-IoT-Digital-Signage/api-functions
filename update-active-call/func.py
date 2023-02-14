@@ -2,14 +2,13 @@ import io
 import json
 import logging
 import oci
-import base64
 import os
 from fdk import response
 from dotenv import load_dotenv
 
 
 '''
-    Function sets the status of a call to active (connected)
+Function sets the status of a call to active (connected)
 '''
 def handler(ctx, data: io.BytesIO = None):
 
@@ -23,7 +22,8 @@ def handler(ctx, data: io.BytesIO = None):
         return response.Response(ctx, msg, status_code = 400)
 
     signer = oci.auth.signers.get_resource_principals_signer()
-    activate_token(signer, tpc)
+    db_response_data = activate_token(signer, tpc)
+    print(db_response_data, flush=True)
 
 def activate_token(signer, tpc):
 
@@ -51,4 +51,4 @@ def activate_token(signer, tpc):
         )
     )
 
-    print(query_response.data)
+    return query_response.data
