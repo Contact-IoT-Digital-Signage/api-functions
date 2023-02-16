@@ -1,0 +1,4 @@
+fdk>=0.1.51
+oci
+PyJWT
+python-dotenv

@@ -1,14 +1,17 @@
 import io
-import json
-from fdk import response
 import oci
 import base64
 import os
+import json
+import jwt
+from fdk import response
 from dotenv import load_dotenv
 from datetime import datetime
-import jwt
 
 
+'''
+    This function creates an active call and returns a client zoom token
+'''
 def handler(ctx, data: io.BytesIO = None):
 
     load_dotenv()
@@ -26,12 +29,11 @@ def handler(ctx, data: io.BytesIO = None):
     signer = oci.auth.signers.get_resource_principals_signer()
     zoom_sdk_key = get_secret(signer, zoom_secret_ocid)
     
-    dt = datetime.now()
-    ts = datetime.timestamp(dt)
-    dt.strftime("%d-%m-%YT%H:%M:%S")
+    now = datetime.now()
 
-    zoom_tokens = get_zoom_tokens(tpc, ts, zoom_sdk_key)
-    insert_in_table(signer, tpc, zoom_tokens[1], dt.strftime("%Y-%m-%dT%H:%M:%S"), signageName)
+    zoom_tokens = get_zoom_tokens(tpc, int(datetime.timestamp(now)), zoom_sdk_key)
+    insert_in_table(signer=signer, tpc=tpc, token=zoom_tokens[1], \
+        current_time=now.strftime("%Y-%m-%dT%H:%M:%S"), signageName=signageName)
     
     return response.Response(
         ctx, response_data=json.dumps(
@@ -71,7 +73,7 @@ def get_zoom_tokens(tpc, current_time, zoom_sdk_key):
         'typ': 'JWT'
     }
     payload = {
-        'app_key': 'fNmQihVKmlnHDAfbcusRV797kNNA5EInQYUB',
+        'app_key': f'{os.getenv("APP_KEY")}',
         'tpc': f'{tpc}',
         'version': 1,
         'role_type': 0,
@@ -84,3 +86,4 @@ def get_zoom_tokens(tpc, current_time, zoom_sdk_key):
     admin_zoom_token = jwt.encode(payload, zoom_sdk_key, "HS256", headers)
 
     return [client_zoom_token, admin_zoom_token]
+    

@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 
 '''
-Function sets the status of a call to active (connected)
+    Function updates the status of a call to active (connected)
 '''
 def handler(ctx, data: io.BytesIO = None):
 
@@ -18,28 +18,24 @@ def handler(ctx, data: io.BytesIO = None):
         tpc = request_body.get("tpc")
     except(Exception) as ex:
         msg = "tpc not found in request body"
-        logging.getLogger().info(str(ex))
         return response.Response(ctx, msg, status_code = 400)
 
     signer = oci.auth.signers.get_resource_principals_signer()
-    db_response_data = activate_token(signer, tpc)
-    print(db_response_data, flush=True)
+    activate_token(signer, tpc)
 
 def activate_token(signer, tpc):
 
     compartment_ocid = os.getenv("COMPARTMENT_OCID")
 
     nosql_client = oci.nosql.NosqlClient({}, signer=signer)
-
+    table_name = os.getenv("TABLE_NAME")
     update_statement = \
-        'update zoomtokens set isActive = true where tpc = $Tpc and isActive = false'
+        f'update {table_name} set isActive = true where tpc = $Tpc and isActive = false'
 
     prepare_statement_response = \
         nosql_client.prepare_statement(compartment_id=compartment_ocid,statement=update_statement)
 
-    print(prepare_statement_response.data.statement, flush=True)
-
-    query_response = nosql_client.query(
+    nosql_client.query(
         query_details=oci.nosql.models.QueryDetails(
             compartment_id=compartment_ocid,
             statement=prepare_statement_response.data.statement,
@@ -50,5 +46,3 @@ def activate_token(signer, tpc):
             }
         )
     )
-
-    return query_response.data

@@ -2,25 +2,24 @@ import io
 import json
 import os
 import oci
-import logging
 from fdk import response
 from dotenv import load_dotenv
 
 
+'''
+    This function deletes an active call by call ID(tpc)
+'''
 def handler(ctx, data: io.BytesIO = None):
     load_dotenv()
     try:
         request_body = json.loads(data.getvalue())
         tpc = request_body.get("tpc")
-    except(Exception) as ex:
+    except Exception:
         msg = "tpc not found in request body"
-        logging.getLogger().info(str(ex))
         return response.Response(ctx, msg, status_code = 400)
         
     signer = oci.auth.signers.get_resource_principals_signer()
-    db_response_data = delete_call(signer, tpc)
-
-    print(db_response_data, flush=True)
+    delete_call(signer, tpc)
 
 def delete_call(signer, call_id):
 
@@ -29,10 +28,9 @@ def delete_call(signer, call_id):
 
     nosql_client = oci.nosql.NosqlClient({}, signer=signer)
 
-    delete_row_response = nosql_client.delete_row(
+    nosql_client.delete_row(
         table_name_or_id=table_ocid,
         key=[f"tpc:{call_id}"],
         compartment_id=compartment_ocid
     )
-
-    return delete_row_response.data
+    
