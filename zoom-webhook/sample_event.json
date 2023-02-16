@@ -1,0 +1,38 @@
+{
+  "event": "session.recording_completed",
+  "payload": {
+    "account_id": "c3zsAwVeQp2x8YwJhhriqw",
+    "object": {
+      "session_name": "Ike0001",
+      "start_time": "2023-02-06T01:48:23Z",
+      "timezone": "",
+      "recording_files": [
+        {
+          "id": "9aa65501-0d08-471b-9cae-c901826a1c07",
+          "status": "completed",
+          "recording_start": "2023-02-06T01:48:30Z",
+          "recording_end": "2023-02-06T01:48:38Z",
+          "file_type": "M4A",
+          "file_size": 126586,
+          "download_url": "https://us06web.zoom.us/rec/webhook_download/0HajIUS1-69ktdA8fINtSyrB1D9W-5al9sbrhZ11U7jqTGh3AAdn1Whh_QrLt5cnX_KHpG65Ry0OR_iG.TrcUUrGSq3ku2djV/Q0Wc2aHNCtkzxj9KW-3ZUMs6KpOwWTAONIbgI5m8VwZwxmOr2CpBVbgbjQcLouM.HK6e4jO8pWLlmuse",
+          "recording_type": "audio_only",
+          "file_extension": "M4A"
+        },
+        {
+          "id": "a6112eb3-f317-4fb3-8356-aa347f8def31",
+          "status": "completed",
+          "recording_start": "2023-02-06T01:48:30Z",
+          "recording_end": "2023-02-06T01:48:38Z",
+          "file_type": "MP4",
+          "file_size": 327564,
+          "download_url": "https://us06web.zoom.us/rec/webhook_download/-lIvKL4g8RR-MRDwjHmBVqkfJ205ubpzHmaMk9N-ipJ8k1w2K3cKjo1AqrBdKljMrbXH6HEApvKsqkoJ.ex1G1R5uJDaSFUVl/HGQk9ZYwoLa-FmJckumTCKBAWEq7AfiHAUxM2QYl43ayWtq899Uz25WONpWeh3s.9QtzY3Hf_hAV3_S1",
+          "recording_type": "shared_screen_with_speaker_view",
+          "file_extension": "MP4"
+        }
+      ],
+      "session_id": "dW0phllcRSGRFM557QwPzQ=="
+    }
+  },
+  "event_ts": 1675648187560,
+  "download_token": "eyJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJodHRwczovL2V2ZW50Lnpvb20udXMiLCJhY2NvdW50SWQiOiJjM3pzQXdWZVFwMng4WXdKaGhyaXF3IiwiYXVkIjoiaHR0cHM6Ly9vYXV0aC56b29tLnVzIiwibWlkIjoiZFcwcGhsbGNSU0dSRk01NTdRd1B6UT09IiwiZXhwIjoxNjc1NzM0NTg3LCJ1c2VySWQiOiJXZ29IejBUUlR4NkNWQ0Y0MS1GV0lBIn0.QcffMnLhcOSgxNn0LFudyjP1J9EA-W7qPPif9WC1xF0OWJexZFHHSVC3C24z06UaljFu7WcOQwdofFNzz_ucIg"
+}
